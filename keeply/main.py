@@ -1,7 +1,7 @@
-from neo_assistant.models_contacts import AddressBook, Record
-from neo_assistant.models_notes import NoteBook, Note
-from neo_assistant.storage import save_data, load_data
-from neo_assistant.utils import input_error, get_closest_match
+from keeply.models_contacts import AddressBook, Record
+from keeply.models_notes import NoteBook, Note
+from keeply.storage import save_data, load_data
+from keeply.utils import input_error, get_closest_match
 
 CONTACTS_FILE = "contacts.pkl"
 NOTES_FILE = "notes.pkl"
@@ -12,7 +12,7 @@ VALID_COMMANDS = [
     "add", "change", "phone", "all", "search-contact", "delete-contact",
     "add-email", "add-address", "add-birthday", "show-birthday", "birthdays",
     "add-note", "all-notes", "search-note", "edit-note", "delete-note", 
-    "search-tag", "sort-tags"
+    "search-tag", "sort-tags", "add-tag", "remove-tag"
 ]
 
 def parse_input(user_input):
@@ -20,9 +20,7 @@ def parse_input(user_input):
     cmd = cmd.strip().lower()
     return cmd, *args
 
-# ==========================================
 # ОБРОБНИКИ ДЛЯ КОНТАКТІВ
-# ==========================================
 
 @input_error
 def add_contact(args, book: AddressBook):
@@ -117,7 +115,7 @@ def search_contact(args, book: AddressBook):
     query = args[0].lower()
     results = []
     for record in book.data.values():
-        # Шукаємо збіги в імені, телефонах, email або адресі
+        # Перевірка на збіги в імені, телефонах, email або адресі
         if (query in record.name.value.lower() or
             any(query in p.value for p in record.phones) or
             (record.email and query in record.email.value.lower()) or
@@ -136,9 +134,7 @@ def delete_contact(args, book: AddressBook):
         return f"🗑️ Контакт {name} видалено."
     raise KeyError
 
-# ==========================================
 # ОБРОБНИКИ ДЛЯ НОТАТОК
-# ==========================================
 
 @input_error
 def add_note(args, notebook: NoteBook):
@@ -199,16 +195,40 @@ def delete_note(args, notebook: NoteBook):
         return f"🗑️ Нотатку '{title}' видалено."
     return f"❌ Нотатку з заголовком '{title}' не знайдено."
 
+@input_error
+def add_tags_to_note(args, notebook: NoteBook):
+    if len(args) < 2:
+        raise ValueError("Введіть заголовок нотатки та хоча б один тег (з #).")
+    title = args[0]
+    tags = [word[1:] for word in args[1:] if word.startswith('#')]
+    if not tags:
+        raise ValueError("Теги повинні починатися з символу #.")
+    note = notebook.find_note(title)
+    if not note:
+        return f"❌ Нотатку з заголовком '{title}' не знайдено."
+    for tag in tags:
+        note.add_tag(tag)
+    return f"✅ Теги успішно додано до нотатки '{title}'."
 
-# ==========================================
+@input_error
+def remove_tag_from_note(args, notebook: NoteBook):
+    if len(args) < 2:
+        raise ValueError("Введіть заголовок нотатки та тег для видалення.")
+    title = args[0]
+    tag_to_remove = args[1].replace('#', '')
+    note = notebook.find_note(title)
+    if not note:
+        return f"❌ Нотатку з заголовком '{title}' не знайдено."
+    note.remove_tag(tag_to_remove)
+    return f"✅ Тег #{tag_to_remove} видалено з нотатки '{title}'."
+
 # ГОЛОВНИЙ ЦИКЛ ПРОГРАМИ
-# ==========================================
 
 def main():
     contacts_book = load_data(CONTACTS_FILE, AddressBook)
     notes_book = load_data(NOTES_FILE, NoteBook)
     
-    print("🤖 Вітаю! Я твій персональний помічник. Введи команду (або 'hello').")
+    print("🤖 Вітаю! Я Keeply - твій персональний помічник. Введи команду (або 'hello').")
     
     while True:
         user_input = input("\n> ")
@@ -265,6 +285,10 @@ def main():
             print(edit_note(args, notes_book))
         elif command == "delete-note":
             print(delete_note(args, notes_book))
+        elif command == "add-tag":
+            print(add_tags_to_note(args, notes_book))
+        elif command == "remove-tag":
+            print(remove_tag_from_note(args, notes_book))
             
         # Невідома команда (Інтелектуальний аналіз)
         else:

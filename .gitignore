@@ -3,3 +3,9 @@ venv/
 
 # Файли збірки пакета
 *.egg-info/
+
+# Кеш Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

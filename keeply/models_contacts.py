@@ -3,7 +3,7 @@ from collections import UserDict
 from datetime import datetime
 
 class Field:
-    """Базовий клас для полів запису."""
+    #Базовий клас для полів запису.
     def __init__(self, value):
         self.value = value
 
@@ -11,11 +11,11 @@ class Field:
         return str(self.value)
 
 class Name(Field):
-    """Клас для зберігання імені контакту. Обов'язкове поле."""
+    #Клас для зберігання імені контакту. Обов'язкове поле.
     pass
 
 class Phone(Field):
-    """Клас для зберігання номера телефону. Має валідацію формату."""
+    #Клас для зберігання номера телефону. Має валідацію формату.
     def __init__(self, value):
         if not self.validate_phone(value):
             raise ValueError("Номер телефону має містити рівно 10 цифр.")
@@ -26,7 +26,7 @@ class Phone(Field):
         return len(value) == 10 and value.isdigit()
 
 class Email(Field):
-    """Клас для зберігання email. Має валідацію формату за допомогою регулярних виразів."""
+    #Клас для зберігання email. Має валідацію формату за допомогою регулярних виразів.
     def __init__(self, value):
         if not self.validate_email(value):
             raise ValueError("Некоректний формат email. Приклад: user@example.com")
@@ -38,7 +38,7 @@ class Email(Field):
         return re.match(pattern, value) is not None
 
 class Birthday(Field):
-    """Клас для зберігання дня народження. Має валідацію формату DD.MM.YYYY."""
+    #Клас для зберігання дня народження. Має валідацію формату DD.MM.YYYY.
     def __init__(self, value):
         try:
             datetime.strptime(value, "%d.%m.%Y")
@@ -47,11 +47,11 @@ class Birthday(Field):
             raise ValueError("Некоректний формат дати. Використовуйте DD.MM.YYYY")
 
 class Address(Field):
-    """Клас для зберігання фізичної адреси контакту."""
+    #Клас для зберігання фізичної адреси контакту.
     pass
 
 class Record:
-    """Клас для зберігання інформації про контакт."""
+    #Клас для зберігання інформації про контакт.
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
@@ -97,7 +97,7 @@ class Record:
 
 
 class AddressBook(UserDict):
-    """Клас для зберігання та управління записами."""
+    #Клас для зберігання та управління записами.
     
     def add_record(self, record: Record):
         self.data[record.name.value] = record
@@ -110,10 +110,7 @@ class AddressBook(UserDict):
             del self.data[name]
 
     def get_upcoming_birthdays(self, days: int):
-        """
-        Повертає список контактів, у яких день народження 
-        відбудеться через вказану кількість днів (days) від поточної дати.
-        """
+        #Повертає список контактів, у яких день народження відбудеться через вказану кількість днів від поточної дати.
         today = datetime.today().date()
         upcoming_birthdays = []
         
